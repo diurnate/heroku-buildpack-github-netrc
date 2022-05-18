@@ -24,12 +24,22 @@ if github_token.nil?
   exit 1
 end
 
+if server_token? github_token
+  token_username = 'x-access-token'
+  token_password = github_token
+else
+  token_username = github_token
+  token_password = 'x-oauth-basic'
+end
+
 netrc_template = File.read "#{File.join(File.dirname(__FILE__), '..', 'support', 'netrc')}"
 
 ##
 # Supply `curl` on the BUILD machine (not in slug) with token to access private GitHub repos
 File.open "#{ENV['HOME']}/.netrc", "w+", 0600 do |f|
   # The ../support/netrc template relies on the `github_token` variable above
+  puts "---> Writing netrc..."
+  puts ERB.new(netrc_template).result
   f.puts ERB.new(netrc_template).result
 end
 

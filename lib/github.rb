@@ -1,6 +1,14 @@
 require 'json'
 
+def server_token? token
+  return token.start_with? "ghs_"
+end
+
 def valid_login? token
+  # ghs are server-to-server tokens so cannot login normally.
+  if server_token? token
+    return true
+  end
   login(token) != "error"
 end
 
@@ -21,8 +29,14 @@ def github_user_orgs token
 end
 
 def user_block token
-  <<-USER
-       GitHub User:   #{login(token)}
-       Organizations: #{github_user_orgs(token).join(", ")}
-  USER
+  if server_token? token
+    <<-SERVER
+        GitHub User: server-to-server token
+    SERVER
+  else
+    <<-USER
+        GitHub User:   #{login(token)}
+        Organizations: #{github_user_orgs(token).join(", ")}
+    USER
+  end
 end
